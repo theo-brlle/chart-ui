@@ -12,7 +12,17 @@ final class LineChartViewModel: ObservableObject {
     @Published var selectedPlotViewBarOffset: CGFloat = .zero
     
     @Published var playgroundSize: CGSize = .zero
+    @Published var lineViewSize: CGSize = .zero
     @Published var plotDetailsViewSize: CGSize = .zero
+    @Published var rightLabelsViewSize: CGSize = .zero
+    
+    var chartColor: Color {
+        let values = data.sorted { $0.key < $1.key }.map {
+            return $0.value
+        }
+        guard let firstValue = values.first, let lastValue = values.last else { return .green }
+        return firstValue < lastValue ? .green : .red
+    }
     
     init(data: [Date : CGFloat]) {
         self.data = data

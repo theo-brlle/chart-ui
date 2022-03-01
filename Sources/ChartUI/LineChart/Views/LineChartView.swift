@@ -8,63 +8,76 @@ public struct LineChartView: View {
     }
     
     public var body: some View {
-        GeometryReader { geometry in
-            ZStack {
+        VStack(spacing: 2) {
+            HStack(spacing: 2) {
+                GeometryReader { geometry in
+                    ZStack {
+                        VStack(spacing: 10) {
+                            Spacer()
+                                .frame(height: viewModel.plotDetailsViewSize.height)
+                            
+                            gradiantBackgroundView
+                                .clipShape(gradiantBackgroundClipShape)
+                        }
+                        
+                        VStack(spacing: 10) {
+                            Spacer()
+                                .frame(height: viewModel.plotDetailsViewSize.height)
+                            
+                            lineView
+                                .border(width: 1, edges: [.bottom, .trailing], color: .systemGray3)
+                        }
+                        
+                        plotDetailsView
+                            .opacity(viewModel.isPlotDetailsViewPresented ? 1 : 0)
+                    }
+                    .onAppear {
+                        viewModel.playgroundSize = CGSize(
+                            width: geometry.size.width,
+                            height: geometry.size.height - viewModel.plotDetailsViewSize.height - 10
+                        )
+                        viewModel.getPoints()
+                    }
+                    .gesture(dragGesture)
+                }
+                
                 VStack(spacing: 10) {
                     Spacer()
                         .frame(height: viewModel.plotDetailsViewSize.height)
                     
-                    backgroundGradiant
-                        .clipShape(backgroundClipShape)
-                }
-                
-                plotDetailsView
-                    .opacity(viewModel.isPlotDetailsViewPresented ? 1 : 0)
-                
-                VStack(spacing: 10) {
-                    Spacer()
-                        .frame(height: viewModel.plotDetailsViewSize.height)
-                    
-                    line
+                    rightLabelsView
                 }
             }
-            .onAppear {
-                viewModel.playgroundSize = CGSize(
-                    width: geometry.size.width,
-                    height: geometry.size.height - viewModel.plotDetailsViewSize.height - 10
-                )
-                viewModel.getPoints()
+            
+            HStack {
+                bottomLabelsView
+                
+                Spacer()
+                    .frame(width: viewModel.rightLabelsViewSize.width)
             }
-            .gesture(dragGesture)
         }
-//        .clipped()
-//        .border(Color.red)
     }
 }
 
 // MARK: - Subviews
 
 private extension LineChartView {
-    var line: some View {
-//        ZStack {
-//            Path { path in
-//                path.move(to: CGPoint(x: 0, y: 0))
-//                path.addLines(viewModel.points)
-//            }
-//            .strokedPath(StrokeStyle(lineWidth: 6, lineCap: .round, lineJoin: .round))
-//            .fill(Color.systemBackground)
-            
-            Path { path in
-                path.move(to: CGPoint(x: 0, y: 0))
-                path.addLines(viewModel.points)
-            }
-            .strokedPath(StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
-            .fill(Color.green)
-//        }
+    var lineView: some View {
+        Path { path in
+            path.move(to: CGPoint(x: 0, y: 0))
+            path.addLines(viewModel.points)
+        }
+        .strokedPath(StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
+        .fill(viewModel.chartColor)
+        .saveSize(in: $viewModel.lineViewSize)
+        .mask(alignment: .bottom) {
+            Rectangle()
+                .frame(height: viewModel.lineViewSize.height + viewModel.plotDetailsViewSize.height + 10)
+        }
     }
     
-    var backgroundGradiant: some View {
-        LinearGradient(colors: [.green.opacity(0.3), .clear],
+    var gradiantBackgroundView: some View {
+        LinearGradient(colors: [viewModel.chartColor.opacity(0.3), .clear],
                        startPoint: .top,
                        endPoint: .bottom)
     }
@@ -72,27 +85,24 @@ private extension LineChartView {
     var plotDetailsView: some View {
         VStack(spacing: 0) {
             VStack(alignment: .leading) {
-                Text("18:00, sep 6th")
+                Text("PRICE")
                     .font(.caption2)
+                    .fontWeight(.medium)
+                    .foregroundColor(.secondaryLabel)
                 
                 Text("$\(Int(round(viewModel.selectedPlotValue)))K")
                     .font(.body)
                     .fontWeight(.bold)
                 
-                Text("+2.1% vs. LY")
+                Text("18:00, sep 6th")
                     .font(.caption2)
-                    .foregroundColor(.green)
+                    .fontWeight(.medium)
+                    .foregroundColor(.secondaryLabel)
             }
             .padding(.horizontal, 6)
             .padding(.vertical, 4)
-            .background(GeometryReader { geometry in
-                RoundedRectangle(cornerRadius: 4)
-                    .fill(Color.secondarySystemBackground)
-                    .onAppear {
-                        viewModel.plotDetailsViewSize = geometry.size
-                        print(viewModel.plotDetailsViewSize)
-                    }
-            })
+            .background(RoundedRectangle(cornerRadius: 4).fill(Color.secondarySystemBackground))
+            .saveSize(in: $viewModel.plotDetailsViewSize)
             .offset(x: viewModel.selectedPlotViewOffset)
             
             Rectangle()
@@ -103,7 +113,36 @@ private extension LineChartView {
         }
     }
     
-    var backgroundClipShape: some Shape {
+    var bottomLabelsView: some View {
+        HStack {
+            Text("00:00")
+                .font(.caption2)
+                .foregroundColor(.secondaryLabel)
+            
+            Spacer()
+            
+            Text("23:59")
+                .font(.caption2)
+                .foregroundColor(.secondaryLabel)
+        }
+    }
+    
+    var rightLabelsView: some View {
+        VStack(alignment: .leading) {
+            Text("$1,500K")
+                .font(.caption2)
+                .foregroundColor(.secondaryLabel)
+            
+            Spacer()
+            
+            Text("$0")
+                .font(.caption2)
+                .foregroundColor(.secondaryLabel)
+        }
+        .saveSize(in: $viewModel.rightLabelsViewSize)
+    }
+    
+    var gradiantBackgroundClipShape: some Shape {
         Path { path in
             path.move(to: CGPoint(x: 0, y: 0))
             path.addLines(viewModel.points)
@@ -130,12 +169,10 @@ private extension LineChartView {
                 
                 viewModel.selectedPlotViewBarOffset = CGFloat(index) * stepWidth - viewModel.playgroundSize.width / 2
                 
-                if touchLocation > stepWidth / 2 || touchLocation > viewModel.plotDetailsViewSize.width / 2 {
-                    // Display normally
-                    viewModel.selectedPlotViewOffset = CGFloat(index) * stepWidth - viewModel.playgroundSize.width / 2
+                if viewModel.selectedPlotViewBarOffset - viewModel.plotDetailsViewSize.width / 2 < 0 - (viewModel.playgroundSize.width / 2) {
+                    viewModel.selectedPlotViewOffset = 0 - (viewModel.playgroundSize.width / 2) + viewModel.plotDetailsViewSize.width / 2 - 6
                 } else {
-                    // Display with magnetic left bound
-                    viewModel.selectedPlotViewOffset = viewModel.playgroundSize.width / 2 - viewModel.playgroundSize.width + (viewModel.plotDetailsViewSize.width / 2) - 6
+                    viewModel.selectedPlotViewOffset = viewModel.selectedPlotViewBarOffset
                 }
             }
             .onEnded { value in

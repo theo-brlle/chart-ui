@@ -16,6 +16,9 @@ fileprivate struct SizeSaver: View {
                 .onAppear {
                     sizeHandler = geometry.size
                 }
+                .onChange(of: geometry.size) { size in
+                    sizeHandler = size
+                }
         }
     }
 }

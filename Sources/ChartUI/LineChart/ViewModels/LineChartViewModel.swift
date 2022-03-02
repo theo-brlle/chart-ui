@@ -2,11 +2,18 @@ import Foundation
 import SwiftUI
 
 final class LineChartViewModel: ObservableObject {
-    @Published var data: [Date : CGFloat]
+    // MARK: - ViewModel's properties
+    
+    var data: [LineChartPlotData]
+    var type: LineChartDataType
+    
+    // MARK: - Observable properties
+    
     @Published var points: [CGPoint] = []
     
+    @Published var selectedPlotData: LineChartPlotData?
+    
     @Published var isPlotDetailsViewPresented: Bool = false
-    @Published var selectedPlotValue: CGFloat = .zero
     
     @Published var selectedPlotViewOffset: CGFloat = .zero
     @Published var selectedPlotViewBarOffset: CGFloat = .zero
@@ -16,27 +23,52 @@ final class LineChartViewModel: ObservableObject {
     @Published var plotDetailsViewSize: CGSize = .zero
     @Published var rightLabelsViewSize: CGSize = .zero
     
+    // MARK: - Computed properties
+    
     var chartColor: Color {
-        let values = data.sorted { $0.key < $1.key }.map {
-            return $0.value
+        guard let firstAmount = data.first?.amount, let lastAmount = data.last?.amount else {
+            return .green
         }
-        guard let firstValue = values.first, let lastValue = values.last else { return .green }
-        return firstValue < lastValue ? .green : .red
+        
+        return firstAmount < lastAmount ? .green : .red
     }
     
-    init(data: [Date : CGFloat]) {
+    // MARK: - Init
+    
+    init(data: [LineChartPlotData], type: LineChartDataType) {
         self.data = data
+        self.type = type
     }
+    
+    // MARK: - Functions
     
     func getPoints() {
-        let values = data.sorted { $0.key < $1.key }.map {
-            return $0.value
-        }
-        let maxPoint: Double = values.max() ?? 0
+        let amounts: [CGFloat] = data.map { $0.amount }
+        let maxAmount: CGFloat = amounts.max() ?? 0
         
-        self.points = values.enumerated().compactMap { (index, element) -> CGPoint in
-            return CGPoint(x: Double(index) * playgroundSize.width / Double(data.values.count - 1),
-                           y: -(element * playgroundSize.height / maxPoint) + playgroundSize.height)
+        self.points = amounts.enumerated().compactMap { (index, amount) -> CGPoint in
+            let x: Double = Double(index) * playgroundSize.width / Double(data.count - 1)
+            let y: Double = -(amount * playgroundSize.height / maxAmount) + playgroundSize.height
+            return CGPoint(x: x, y: y)
+        }
+    }
+    
+    func updateSelectedPlot(from touchLocation: CGFloat) {
+        let stepWidth: CGFloat = playgroundSize.width / CGFloat(points.count - 1)
+        let index: Int = Int(round(touchLocation / stepWidth))
+
+        guard (0..<data.count).contains(index) else {
+            return
+        }
+        
+        selectedPlotData = data[index]
+        
+        selectedPlotViewBarOffset = CGFloat(index) * stepWidth - playgroundSize.width / 2
+        
+        if selectedPlotViewBarOffset - plotDetailsViewSize.width / 2 < -(playgroundSize.width / 2) {
+            selectedPlotViewOffset = -(playgroundSize.width / 2) + plotDetailsViewSize.width / 2 - 6
+        } else {
+            selectedPlotViewOffset = selectedPlotViewBarOffset
         }
     }
 }

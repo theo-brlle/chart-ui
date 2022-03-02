@@ -1,0 +1,6 @@
+"price.title" = "Price";
+"price.formatter" = "$%d";
+
+"speed.title" = "Speed";
+"speed.formatter" = "%dmph";
+

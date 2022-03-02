@@ -3,8 +3,8 @@ import SwiftUI
 public struct LineChartView: View {
     @StateObject private var viewModel: LineChartViewModel
     
-    public init(data: [Date : CGFloat]) {
-        _viewModel = StateObject(wrappedValue: LineChartViewModel(data: data))
+    public init(data: [LineChartPlotData], type: LineChartDataType) {
+        _viewModel = StateObject(wrappedValue: LineChartViewModel(data: data, type: type))
     }
     
     public var body: some View {
@@ -85,16 +85,16 @@ private extension LineChartView {
     var plotDetailsView: some View {
         VStack(spacing: 0) {
             VStack(alignment: .leading) {
-                Text("PRICE")
+                Text(viewModel.type.localizedTitle.localized().uppercased())
                     .font(.caption2)
                     .fontWeight(.medium)
                     .foregroundColor(.secondaryLabel)
                 
-                Text("$\(Int(round(viewModel.selectedPlotValue)))K")
+                Text(viewModel.type.localizedFormatter.localized(withParameters: Int(round(viewModel.selectedPlotData?.amount ?? 0))))
                     .font(.body)
                     .fontWeight(.bold)
                 
-                Text("18:00, sep 6th")
+                Text(viewModel.selectedPlotData?.label ?? "")
                     .font(.caption2)
                     .fontWeight(.medium)
                     .foregroundColor(.secondaryLabel)
@@ -113,29 +113,31 @@ private extension LineChartView {
         }
     }
     
-    var bottomLabelsView: some View {
-        HStack {
-            Text("00:00")
-                .font(.caption2)
-                .foregroundColor(.secondaryLabel)
-            
-            Spacer()
-            
-            Text("23:59")
-                .font(.caption2)
-                .foregroundColor(.secondaryLabel)
+    @ViewBuilder var bottomLabelsView: some View {
+        if let firstLabel = viewModel.data.first?.label, let lastLabel = viewModel.data.last?.label {
+            HStack {
+                Text(firstLabel)
+                    .font(.caption2)
+                    .foregroundColor(.secondaryLabel)
+                
+                Spacer()
+                
+                Text(lastLabel)
+                    .font(.caption2)
+                    .foregroundColor(.secondaryLabel)
+            }
         }
     }
     
     var rightLabelsView: some View {
         VStack(alignment: .leading) {
-            Text("$1,500K")
+            Text(viewModel.type.localizedFormatter.localized(withParameters: Int(round(viewModel.data.map { $0.amount }.max() ?? 0))))
                 .font(.caption2)
                 .foregroundColor(.secondaryLabel)
             
             Spacer()
             
-            Text("$0")
+            Text(viewModel.type.localizedFormatter.localized(withParameters: 0))
                 .font(.caption2)
                 .foregroundColor(.secondaryLabel)
         }
@@ -154,79 +156,35 @@ private extension LineChartView {
     var dragGesture: some Gesture {
         DragGesture(minimumDistance: 0)
             .onChanged { value in
-                viewModel.isPlotDetailsViewPresented = true
-                let touchLocation: CGFloat = value.location.x
-                let stepWidth: CGFloat = viewModel.playgroundSize.width / CGFloat(viewModel.points.count - 1)
-                let index: Int = Int(round(touchLocation / stepWidth))
-
-                guard 0 <= index && index < viewModel.data.count else {
-                    return
+                withAnimation {
+                    viewModel.isPlotDetailsViewPresented = true
                 }
                 
-                viewModel.selectedPlotValue = viewModel.data.sorted { $0.key < $1.key }.map {
-                    return $0.value
-                }[index]
-                
-                viewModel.selectedPlotViewBarOffset = CGFloat(index) * stepWidth - viewModel.playgroundSize.width / 2
-                
-                if viewModel.selectedPlotViewBarOffset - viewModel.plotDetailsViewSize.width / 2 < 0 - (viewModel.playgroundSize.width / 2) {
-                    viewModel.selectedPlotViewOffset = 0 - (viewModel.playgroundSize.width / 2) + viewModel.plotDetailsViewSize.width / 2 - 6
-                } else {
-                    viewModel.selectedPlotViewOffset = viewModel.selectedPlotViewBarOffset
-                }
+                viewModel.updateSelectedPlot(from: value.location.x)
             }
             .onEnded { value in
-                viewModel.isPlotDetailsViewPresented = false
+                withAnimation {
+                    viewModel.isPlotDetailsViewPresented = false
+                }
             }
     }
 }
 
 // MARK: - Preview
 
-public extension Date {
-    static func from(string: String) -> Date {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "dd/MM/yy"
-        return dateFormatter.date(from: string) ?? Date()
-    }
-}
-
-
 struct LineChartView_Previews: PreviewProvider {
     static let data = [
-        Date.from(string: "01-01-2022") : CGFloat(990),
-        Date.from(string: "02-01-2022") : CGFloat(1300),
-        Date.from(string: "03-01-2022") : CGFloat(1200),
-        Date.from(string: "04-01-2022") : CGFloat(600),
-        Date.from(string: "05-01-2022") : CGFloat(500),
-        Date.from(string: "06-01-2022") : CGFloat(600),
-        Date.from(string: "07-01-2022") : CGFloat(1100),
-        
-//        Date.from(string: "08-01-2022") : CGFloat(990),
-//        Date.from(string: "09-01-2022") : CGFloat(1300),
-//        Date.from(string: "10-01-2022") : CGFloat(1200),
-//        Date.from(string: "11-01-2022") : CGFloat(0),
-//        Date.from(string: "12-01-2022") : CGFloat(500),
-//        Date.from(string: "13-01-2022") : CGFloat(600),
-//        Date.from(string: "14-01-2022") : CGFloat(1100),
-//        Date.from(string: "15-01-2022") : CGFloat(990),
-//        Date.from(string: "16-01-2022") : CGFloat(1300),
-//        Date.from(string: "17-01-2022") : CGFloat(1200),
-//        Date.from(string: "18-01-2022") : CGFloat(0),
-//        Date.from(string: "19-01-2022") : CGFloat(500),
-//        Date.from(string: "20-01-2022") : CGFloat(600),
-//        Date.from(string: "21-01-2022") : CGFloat(1100),
-//        Date.from(string: "22-01-2022") : CGFloat(990),
-//        Date.from(string: "23-01-2022") : CGFloat(1300),
-//        Date.from(string: "24-01-2022") : CGFloat(1200),
-//        Date.from(string: "25-01-2022") : CGFloat(0),
-//        Date.from(string: "26-01-2022") : CGFloat(500),
-//        Date.from(string: "27-01-2022") : CGFloat(600),
-//        Date.from(string: "28-01-2022") : CGFloat(1100)
+        LineChartPlotData(label: "Jan 1st, 2022", amount: CGFloat(990)),
+        LineChartPlotData(label: "Jan 2nd, 2022", amount: CGFloat(1300)),
+        LineChartPlotData(label: "Jan 3rd, 2022", amount: CGFloat(1200)),
+        LineChartPlotData(label: "Jan 4th, 2022", amount: CGFloat(600)),
+        LineChartPlotData(label: "Jan 5th, 2022", amount: CGFloat(500)),
+        LineChartPlotData(label: "Jan 6th, 2022", amount: CGFloat(600)),
+        LineChartPlotData(label: "Jan 7th, 2022", amount: CGFloat(1100))
     ]
     
     static var previews: some View {
-        LineChartView(data: data)
+        LineChartView(data: data, type: .price)
             .frame(height: 250)
             .padding()
             .preferredColorScheme(.dark)

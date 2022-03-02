@@ -9,17 +9,17 @@ A SwiftUI chart library.
 ```swift
 struct ContentView: View {
     let data = [
-        Date.from(string: "01-01-2022") : CGFloat(990),
-        Date.from(string: "02-01-2022") : CGFloat(1300),
-        Date.from(string: "03-01-2022") : CGFloat(1200),
-        Date.from(string: "04-01-2022") : CGFloat(600),
-        Date.from(string: "05-01-2022") : CGFloat(500),
-        Date.from(string: "06-01-2022") : CGFloat(650),
-        Date.from(string: "07-01-2022") : CGFloat(1100)
+        LineChartPlotData(label: "Jan 1st, 2022", amount: CGFloat(990)),
+        LineChartPlotData(label: "Jan 2nd, 2022", amount: CGFloat(1300)),
+        LineChartPlotData(label: "Jan 3rd, 2022", amount: CGFloat(1200)),
+        LineChartPlotData(label: "Jan 4th, 2022", amount: CGFloat(600)),
+        LineChartPlotData(label: "Jan 5th, 2022", amount: CGFloat(500)),
+        LineChartPlotData(label: "Jan 6th, 2022", amount: CGFloat(600)),
+        LineChartPlotData(label: "Jan 7th, 2022", amount: CGFloat(1100))
     ]
     
     var body: some View {
-        LineChartView(data: data)
+        LineChartView(data: data, type: .price)
             .frame(height: 250)
             .padding()
     }

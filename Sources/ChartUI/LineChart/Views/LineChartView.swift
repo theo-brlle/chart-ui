@@ -1,10 +1,10 @@
 import SwiftUI
 
 public struct LineChartView: View {
-    @StateObject private var viewModel: LineChartViewModel
+    @ObservedObject private var viewModel: LineChartViewModel
     
     public init(data: [LineChartPlotData], type: LineChartDataType) {
-        _viewModel = StateObject(wrappedValue: LineChartViewModel(data: data, type: type))
+        viewModel = LineChartViewModel(data: data, type: type)
     }
     
     public var body: some View {

@@ -67,6 +67,8 @@ final class LineChartViewModel: ObservableObject {
         
         if selectedPlotViewBarOffset - plotDetailsViewSize.width / 2 < -(playgroundSize.width / 2) {
             selectedPlotViewOffset = -(playgroundSize.width / 2) + plotDetailsViewSize.width / 2 - 6
+        } else if selectedPlotViewBarOffset + plotDetailsViewSize.width / 2 > playgroundSize.width / 2 + rightLabelsViewSize.width {
+            selectedPlotViewOffset = playgroundSize.width / 2 - plotDetailsViewSize.width / 2 + rightLabelsViewSize.width + 6
         } else {
             selectedPlotViewOffset = selectedPlotViewBarOffset
         }

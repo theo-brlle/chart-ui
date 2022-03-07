@@ -5,7 +5,7 @@ extension String {
 #if SWIFT_PACKAGE
         return String(format: NSLocalizedString(self, bundle: .module, comment: ""), arguments: parameters)
 #else
-        guard let path = Bundle(for: LineChartView.self).path(forResource: "ChartUI", ofType: "bundle") else {
+        guard let path = Bundle(for: LineChartViewModel.self).path(forResource: "ChartUI", ofType: "bundle") else {
             return String(format: NSLocalizedString(self, bundle: .main, comment: ""), arguments: parameters)
         }
         let bundle = Bundle(path: path) ?? Bundle.main

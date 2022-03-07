@@ -46,7 +46,7 @@ final class LineChartViewModel: ObservableObject {
         let amounts: [CGFloat] = data.map { $0.amount }
         let maxAmount: CGFloat = amounts.max() ?? 0
         
-        self.points = amounts.enumerated().compactMap { (index, amount) -> CGPoint in
+        self.points = amounts.enumerated().map { (index, amount) -> CGPoint in
             let x: Double = Double(index) * playgroundSize.width / Double(data.count - 1)
             let y: Double = -(amount * playgroundSize.height / maxAmount) + playgroundSize.height
             return CGPoint(x: x, y: y)

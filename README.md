@@ -2,9 +2,35 @@
 
 A SwiftUI chart library.
 
-## Usage
+## Installation
+
+ChartUI is compatible with SPM and Cocoapods.
+
+### SPM
+
+Just add this repo as a dependency of your project. Here is the repo URL: https://github.com/theo-brlle/chart-ui.git
+
+### Cocoapods
+
+Add ChartUI as a dependency in your `Podfile`.
+
+```
+pod 'ChartUI', '~> 0.1.7'
+```
+
+Then run `pod install` and open the `.xcworkspace` file in Xcode.
+
+## Sample usage 
 
 ### Line chart
+
+First, import the library to you file.
+
+```swift
+import ChartUI
+```
+
+Then, create the data you want to display in the chart and create the `LineChartView`. Don't forget to give it a height with `.frame(height:)`. 
 
 ```swift
 struct ContentView: View {

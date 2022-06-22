@@ -58,8 +58,6 @@ final class LineChartViewModel: ObservableObject {
             let values: [CGFloat] = data.map { $0.value.value }
             let maxValue: CGFloat = values.max() ?? 0
             
-            dump(maxValue)
-            
             let points: [CGPoint] = values.enumerated().map { (index, value) -> CGPoint in
                 let x: Double = Double(index) * playgroundSize.width / Double(data.count - 1)
                 let y: Double = -(value * playgroundSize.height / maxValue) + playgroundSize.height

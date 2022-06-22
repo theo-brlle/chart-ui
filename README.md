@@ -15,7 +15,7 @@ Just add this repo as a dependency of your project. Here is the repo URL: https:
 Add ChartUI as a dependency in your `Podfile`.
 
 ```
-pod 'ChartUI', '~> 0.2.0'
+pod 'ChartUI', '~> 0.2.1'
 ```
 
 Then run `pod install` and open the `.xcworkspace` file in Xcode.

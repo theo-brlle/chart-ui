@@ -1,7 +1,7 @@
 Pod::Spec.new do |spec|
 
   spec.name         = "ChartUI"
-  spec.version      = "0.2.0"
+  spec.version      = "0.2.1"
   spec.summary      = "📈 A SwiftUI chart library"
   spec.homepage     = "https://github.com/theo-brlle/chart-ui"
   spec.license      = { :type => "MIT", :file => "LICENSE" }

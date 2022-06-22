@@ -15,37 +15,38 @@ Just add this repo as a dependency of your project. Here is the repo URL: https:
 Add ChartUI as a dependency in your `Podfile`.
 
 ```
-pod 'ChartUI', '~> 0.1.7'
+pod 'ChartUI', '~> 0.2.0'
 ```
 
 Then run `pod install` and open the `.xcworkspace` file in Xcode.
 
 ## Sample usage 
 
-### Line chart
+### Line chart (with one line)
 
-First, import the library to you file.
+First, import the library to your file.
 
 ```swift
 import ChartUI
 ```
 
-Then, create the data you want to display in the chart and create the `LineChartView`. Don't forget to give it a height with `.frame(height:)`. 
+Then, create the data you want to display in the chart and create the `LineChartView`.
+Don't forget to give it a height with `.frame(height:)`. 
 
 ```swift
 struct ContentView: View {
     let data = [
-        LineChartPlotData(label: "Jan 1st, 2022", amount: CGFloat(990)),
-        LineChartPlotData(label: "Jan 2nd, 2022", amount: CGFloat(1300)),
-        LineChartPlotData(label: "Jan 3rd, 2022", amount: CGFloat(1200)),
-        LineChartPlotData(label: "Jan 4th, 2022", amount: CGFloat(600)),
-        LineChartPlotData(label: "Jan 5th, 2022", amount: CGFloat(500)),
-        LineChartPlotData(label: "Jan 6th, 2022", amount: CGFloat(600)),
-        LineChartPlotData(label: "Jan 7th, 2022", amount: CGFloat(1100))
+        LineChartSimplePlotData(key: "Jan 1st, 2022", value: FormattedChartValue(value: CGFloat(990), formatted: "990 €")),
+        LineChartSimplePlotData(key: "Jan 2nd, 2022", value: FormattedChartValue(value: CGFloat(1300), formatted: "1 300 €")),
+        LineChartSimplePlotData(key: "Jan 3rd, 2022", value: FormattedChartValue(value: CGFloat(1200), formatted: "1 200 €")),
+        LineChartSimplePlotData(key: "Jan 4th, 2022", value: FormattedChartValue(value: CGFloat(600), formatted: "600 €")),
+        LineChartSimplePlotData(key: "Jan 5th, 2022", value: FormattedChartValue(value: CGFloat(500), formatted: "500 €")),
+        LineChartSimplePlotData(key: "Jan 6th, 2022", value: FormattedChartValue(value: CGFloat(600), formatted: "600 €")),
+        LineChartSimplePlotData(key: "Jan 7th, 2022", value: FormattedChartValue(value: CGFloat(1100), formatted: "1 100 €"))
     ]
     
     var body: some View {
-        LineChartView(data: data, type: .price)
+        LineChartView(type: .oneLine(data: oneLineData, detailsViewLabel: "PRICE"))
             .frame(height: 250)
             .padding()
     }

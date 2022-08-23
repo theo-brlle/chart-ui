@@ -73,7 +73,7 @@ public struct LineChartView: View {
                                 maxFirstValue ?? FormattedChartValue(value: 0, formatted: ""),
                                 maxSecondValue ?? FormattedChartValue(value: 0, formatted: "")
                             ).formatted,
-                            bottomLabel: max(
+                            bottomLabel: min(
                                 minFirstValue ?? FormattedChartValue(value: 0, formatted: ""),
                                 minSecondValue ?? FormattedChartValue(value: 0, formatted: "")
                             ).formatted

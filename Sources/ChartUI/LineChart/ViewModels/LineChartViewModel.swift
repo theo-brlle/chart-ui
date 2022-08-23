@@ -57,10 +57,12 @@ final class LineChartViewModel: ObservableObject {
         case .oneLine(let data, _):
             let values: [CGFloat] = data.map { $0.value.value }
             let maxValue: CGFloat = values.max() ?? 0
+            let minValue: CGFloat = values.min() ?? 0
             
             let points: [CGPoint] = values.enumerated().map { (index, value) -> CGPoint in
                 let x: Double = Double(index) * playgroundSize.width / Double(data.count - 1)
-                let y: Double = -(value * playgroundSize.height / maxValue) + playgroundSize.height
+                let preY: Double = (value - minValue) * playgroundSize.height / (maxValue - minValue)
+                let y: Double = -preY + playgroundSize.height
                 return CGPoint(x: x, y: y)
             }
             self.points.append(points)
@@ -69,16 +71,19 @@ final class LineChartViewModel: ObservableObject {
             let firstValues: [CGFloat] = data.map { $0.firstValue.value }
             let secondValues: [CGFloat] = data.map { $0.secondValue.value }
             let maxValue: CGFloat = max(firstValues.max() ?? 0, secondValues.max() ?? 0)
+            let minValue: CGFloat = min(firstValues.min() ?? 0, secondValues.min() ?? 0)
             
             let firstLinePoints: [CGPoint] = firstValues.enumerated().map { (index, value) -> CGPoint in
                 let x: Double = Double(index) * playgroundSize.width / Double(data.count - 1)
-                let y: Double = -(value * playgroundSize.height / maxValue) + playgroundSize.height
+                let preY: Double = (value - minValue) * playgroundSize.height / (maxValue - minValue)
+                let y: Double = -preY + playgroundSize.height
                 return CGPoint(x: x, y: y)
             }
             
             let secondLinePoints: [CGPoint] = secondValues.enumerated().map { (index, value) -> CGPoint in
                 let x: Double = Double(index) * playgroundSize.width / Double(data.count - 1)
-                let y: Double = -(value * playgroundSize.height / maxValue) + playgroundSize.height
+                let preY: Double = (value - minValue) * playgroundSize.height / (maxValue - minValue)
+                let y: Double = -preY + playgroundSize.height
                 return CGPoint(x: x, y: y)
             }
             

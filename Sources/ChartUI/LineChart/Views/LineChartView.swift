@@ -14,89 +14,115 @@ public struct LineChartView: View {
     // MARK: - Body
     
     public var body: some View {
-        VStack(spacing: 2) {
-            HStack(spacing: 2) {
-                GeometryReader { geometry in
-                    ZStack {
-                        VStack(spacing: 10) {
-                            Spacer()
-                                .frame(height: viewModel.plotDetailsViewSize.height)
-                            
-                            ZStack {
-                                ForEach(Array(
-                                    viewModel.points.enumerated()).reversed(),
-                                    id: \.offset
-                                ) { index, points in
-                                    gradientBackgroundView(color: index == 0 ? viewModel.chartColor : .gray)
-                                        .clipShape(gradientBackgroundClipShape(points: points))
-                                    
-                                    lineView(
-                                        points: points,
-                                        color: index == 0 ? viewModel.chartColor : .gray
-                                    )
-                                    .border(width: 1, edges: [.bottom, .trailing], color: .systemGray3)
+        if !viewModel.isErrorViewPresented {
+            VStack(spacing: 2) {
+                HStack(spacing: 2) {
+                    GeometryReader { geometry in
+                        ZStack {
+                            VStack(spacing: 10) {
+                                Spacer()
+                                    .frame(height: viewModel.plotDetailsViewSize.height)
+                                
+                                ZStack {
+                                    ForEach(
+                                        Array(viewModel.points.enumerated()).reversed(),
+                                        id: \.offset
+                                    ) { index, points in
+                                        gradientBackgroundView(color: index == 0 ? viewModel.chartColor : .gray)
+                                            .clipShape(gradientBackgroundClipShape(points: points))
+                                        
+                                        lineView(
+                                            points: points,
+                                            color: index == 0 ? viewModel.chartColor : .gray
+                                        )
+                                        .border(width: 1, edges: [.bottom, .trailing], color: .systemGray3)
+                                    }
                                 }
                             }
+                            
+                            plotDetailsView
+                                .opacity(viewModel.isPlotDetailsViewPresented ? 1 : 0)
                         }
+                        .onAppear {
+                            viewModel.playgroundSize = CGSize(
+                                width: geometry.size.width,
+                                height: geometry.size.height - viewModel.plotDetailsViewSize.height - 10
+                            )
+                            viewModel.getPoints()
+                        }
+                        .gesture(dragGesture)
+                    }
+                    
+                    VStack(spacing: 10) {
+                        Spacer()
+                            .frame(height: viewModel.plotDetailsViewSize.height)
                         
-                        plotDetailsView
-                            .opacity(viewModel.isPlotDetailsViewPresented ? 1 : 0)
+                        switch viewModel.type {
+                        case .oneLine(let data, _):
+                            rightLabelsView(
+                                topLabel: data.max(by: { $0.value < $1.value })?.value.formatted ?? "",
+                                bottomLabel: {
+                                    let values: [CGFloat] = data.map { $0.value.value }
+                                    
+                                    if values.allSatisfy({ $0 == values.first }) {
+                                        return "0"
+                                    } else {
+                                        return data.min(by: { $0.value < $1.value })?.value.formatted ?? ""
+                                    }
+                                }()
+                            )
+                            
+                        case .twoLines(let data, _):
+                            let maxFirstValue = data.max(by: { $0.firstValue < $1.firstValue })?.firstValue
+                            let maxSecondValue = data.max(by: { $0.secondValue < $1.secondValue })?.secondValue
+                            let minFirstValue = data.min(by: { $0.firstValue < $1.firstValue })?.firstValue
+                            let minSecondValue = data.min(by: { $0.secondValue < $1.secondValue })?.secondValue
+                            rightLabelsView(
+                                topLabel: max(
+                                    maxFirstValue ?? FormattedChartValue(value: 0, formatted: ""),
+                                    maxSecondValue ?? FormattedChartValue(value: 0, formatted: "")
+                                ).formatted,
+                                bottomLabel: {
+                                    let values: [CGFloat] = data.map { $0.firstValue.value } + data.map { $0.secondValue.value }
+                                    
+                                    if values.allSatisfy({ $0 == values.first }) {
+                                        return "0"
+                                    } else {
+                                        return min(
+                                            minFirstValue ?? FormattedChartValue(value: 0, formatted: ""),
+                                            minSecondValue ?? FormattedChartValue(value: 0, formatted: "")
+                                        ).formatted
+                                    }
+                                }()
+                            )
+                        }
                     }
-                    .onAppear {
-                        viewModel.playgroundSize = CGSize(
-                            width: geometry.size.width,
-                            height: geometry.size.height - viewModel.plotDetailsViewSize.height - 10
-                        )
-                        viewModel.getPoints()
-                    }
-                    .gesture(dragGesture)
                 }
                 
-                VStack(spacing: 10) {
-                    Spacer()
-                        .frame(height: viewModel.plotDetailsViewSize.height)
-                    
+                HStack {
                     switch viewModel.type {
                     case .oneLine(let data, _):
-                        rightLabelsView(
-                            topLabel: data.max(by: { $0.value < $1.value })?.value.formatted ?? "",
-                            bottomLabel: data.min(by: { $0.value < $1.value })?.value.formatted ?? ""
-                        )
+                        if let leadingLabel = data.first?.key, let trailingLabel = data.last?.key {
+                            bottomLabelsView(leadingLabel: leadingLabel, trailingLabel: trailingLabel)
+                        }
                         
                     case .twoLines(let data, _):
-                        let maxFirstValue = data.max(by: { $0.firstValue < $1.firstValue })?.firstValue
-                        let maxSecondValue = data.max(by: { $0.secondValue < $1.secondValue })?.secondValue
-                        let minFirstValue = data.min(by: { $0.firstValue < $1.firstValue })?.firstValue
-                        let minSecondValue = data.min(by: { $0.secondValue < $1.secondValue })?.secondValue
-                        rightLabelsView(
-                            topLabel: max(
-                                maxFirstValue ?? FormattedChartValue(value: 0, formatted: ""),
-                                maxSecondValue ?? FormattedChartValue(value: 0, formatted: "")
-                            ).formatted,
-                            bottomLabel: min(
-                                minFirstValue ?? FormattedChartValue(value: 0, formatted: ""),
-                                minSecondValue ?? FormattedChartValue(value: 0, formatted: "")
-                            ).formatted
-                        )
-                    }
-                }
-            }
-            
-            HStack {
-                switch viewModel.type {
-                case .oneLine(let data, _):
-                    if let leadingLabel = data.first?.key, let trailingLabel = data.last?.key {
-                        bottomLabelsView(leadingLabel: leadingLabel, trailingLabel: trailingLabel)
+                        if let leadingLabel = data.first?.key, let trailingLabel = data.last?.key {
+                            bottomLabelsView(leadingLabel: leadingLabel, trailingLabel: trailingLabel)
+                        }
                     }
                     
-                case .twoLines(let data, _):
-                    if let leadingLabel = data.first?.key, let trailingLabel = data.last?.key {
-                        bottomLabelsView(leadingLabel: leadingLabel, trailingLabel: trailingLabel)
-                    }
+                    Spacer()
+                        .frame(width: viewModel.rightLabelsViewSize.width)
                 }
+            }
+        } else {
+            ZStack {
+                RoundedRectangle(cornerRadius: 10)
+                    .foregroundColor(.secondarySystemBackground)
                 
-                Spacer()
-                    .frame(width: viewModel.rightLabelsViewSize.width)
+                Text("No data to display")
+                    .font(.caption)
             }
         }
     }

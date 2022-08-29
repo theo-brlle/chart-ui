@@ -13,6 +13,7 @@ final class LineChartViewModel: ObservableObject {
     @Published var selectedPlotData: (label: String, title: String, subTitle: String)?
     
     @Published var isPlotDetailsViewPresented: Bool = false
+    @Published var isErrorViewPresented: Bool = false
     
     @Published var selectedPlotViewOffset: CGFloat = .zero
     @Published var selectedPlotViewBarOffset: CGFloat = .zero
@@ -33,14 +34,14 @@ final class LineChartViewModel: ObservableObject {
                 return .green
             }
             
-            return firstAmount < lastAmount ? .green : .red
+            return firstAmount <= lastAmount ? .green : .red
             
         case .twoLines(let data, _):
             guard let firstAmount = data.first?.firstValue, let lastAmount = data.last?.firstValue else {
                 return .green
             }
             
-            return firstAmount < lastAmount ? .green : .red
+            return firstAmount <= lastAmount ? .green : .red
         }
     }
     
@@ -55,9 +56,14 @@ final class LineChartViewModel: ObservableObject {
     func getPoints() {
         switch type {
         case .oneLine(let data, _):
+            guard data.count >= 2, !data.allSatisfy({ $0.value.value == 0 }) else {
+                isErrorViewPresented = true
+                return
+            }
+            
             let values: [CGFloat] = data.map { $0.value.value }
             let maxValue: CGFloat = values.max() ?? 0
-            let minValue: CGFloat = values.min() ?? 0
+            let minValue: CGFloat = values.allSatisfy { $0 == values.first } ? 0 : (values.min() ?? 0)
             
             let points: [CGPoint] = values.enumerated().map { (index, value) -> CGPoint in
                 let x: Double = Double(index) * playgroundSize.width / Double(data.count - 1)
@@ -68,6 +74,12 @@ final class LineChartViewModel: ObservableObject {
             self.points.append(points)
             
         case .twoLines(let data, _):
+            guard data.count >= 2,
+                  !(data.allSatisfy({ $0.firstValue.value == 0 }) && data.allSatisfy({ $0.secondValue.value == 0 })) else {
+                isErrorViewPresented = true
+                return
+            }
+            
             let firstValues: [CGFloat] = data.map { $0.firstValue.value }
             let secondValues: [CGFloat] = data.map { $0.secondValue.value }
             let maxValue: CGFloat = max(firstValues.max() ?? 0, secondValues.max() ?? 0)

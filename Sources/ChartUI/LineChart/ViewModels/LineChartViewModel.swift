@@ -65,6 +65,11 @@ final class LineChartViewModel: ObservableObject {
             let maxValue: CGFloat = values.max() ?? 0
             let minValue: CGFloat = values.allSatisfy { $0 == values.first } ? 0 : (values.min() ?? 0)
             
+            guard maxValue - minValue != 0 else {
+                isErrorViewPresented = true
+                return
+            }
+            
             let points: [CGPoint] = values.enumerated().map { (index, value) -> CGPoint in
                 let x: Double = Double(index) * playgroundSize.width / Double(data.count - 1)
                 let preY: Double = (value - minValue) * playgroundSize.height / (maxValue - minValue)
@@ -75,7 +80,7 @@ final class LineChartViewModel: ObservableObject {
             
         case .twoLines(let data, _):
             guard data.count >= 2,
-                  !(data.allSatisfy({ $0.firstValue.value == 0 }) && data.allSatisfy({ $0.secondValue.value == 0 })) else {
+                  !(data.allSatisfy { $0.firstValue.value == 0 } && data.allSatisfy { $0.secondValue.value == 0 }) else {
                 isErrorViewPresented = true
                 return
             }
@@ -84,6 +89,11 @@ final class LineChartViewModel: ObservableObject {
             let secondValues: [CGFloat] = data.map { $0.secondValue.value }
             let maxValue: CGFloat = max(firstValues.max() ?? 0, secondValues.max() ?? 0)
             let minValue: CGFloat = min(firstValues.min() ?? 0, secondValues.min() ?? 0)
+            
+            guard maxValue - minValue != 0 else {
+                isErrorViewPresented = true
+                return
+            }
             
             let firstLinePoints: [CGPoint] = firstValues.enumerated().map { (index, value) -> CGPoint in
                 let x: Double = Double(index) * playgroundSize.width / Double(data.count - 1)

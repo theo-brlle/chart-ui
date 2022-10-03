@@ -238,6 +238,10 @@ private extension LineChartView {
     var dragGesture: some Gesture {
         DragGesture(minimumDistance: 0)
             .onChanged { value in
+                if !viewModel.isPlotDetailsViewPresented {
+                    viewModel.onDragAction?(true)
+                }
+                
                 withAnimation {
                     viewModel.isPlotDetailsViewPresented = true
                 }
@@ -245,10 +249,21 @@ private extension LineChartView {
                 viewModel.updateSelectedPlot(from: value.location.x)
             }
             .onEnded { value in
+                viewModel.onDragAction?(false)
+                
                 withAnimation {
                     viewModel.isPlotDetailsViewPresented = false
                 }
             }
+    }
+}
+
+// MARK: - Callbacks
+
+public extension LineChartView {
+    func onDrag(_ action: @escaping (Bool) -> Void) -> Self {
+        self.viewModel.onDragAction = action
+        return self
     }
 }
 

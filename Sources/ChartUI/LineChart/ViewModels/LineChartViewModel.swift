@@ -25,10 +25,6 @@ final class LineChartViewModel: ObservableObject {
     @Published var plotDetailsViewSize: CGSize = .zero
     @Published var rightLabelsViewSize: CGSize = .zero
     
-    // MARK: - Callbacks
-    
-    var onDragAction: ((Bool) -> Void)?
-    
     // MARK: - Computed properties
     
     var chartColor: Color {

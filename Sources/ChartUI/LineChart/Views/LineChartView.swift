@@ -3,12 +3,16 @@ import SwiftUI
 public struct LineChartView: View {
     // MARK: - Observable properties
     
-    @ObservedObject private var viewModel: LineChartViewModel
+    @StateObject private var viewModel: LineChartViewModel
+    
+    // MARK: - Callbacks
+    
+    private var onDragAction: ((Bool) -> Void)?
     
     // MARK: - Init
     
     public init(type: LineChartType) {
-        viewModel = LineChartViewModel(type: type)
+        _viewModel = StateObject(wrappedValue: LineChartViewModel(type: type))
     }
     
     // MARK: - Body
@@ -239,7 +243,7 @@ private extension LineChartView {
         DragGesture(minimumDistance: 0)
             .onChanged { value in
                 if !viewModel.isPlotDetailsViewPresented {
-                    viewModel.onDragAction?(true)
+                    onDragAction?(true)
                 }
                 
                 withAnimation {
@@ -249,7 +253,7 @@ private extension LineChartView {
                 viewModel.updateSelectedPlot(from: value.location.x)
             }
             .onEnded { value in
-                viewModel.onDragAction?(false)
+                onDragAction?(false)
                 
                 withAnimation {
                     viewModel.isPlotDetailsViewPresented = false
@@ -261,9 +265,10 @@ private extension LineChartView {
 // MARK: - Callbacks
 
 public extension LineChartView {
-    func onDrag(_ action: @escaping (Bool) -> Void) -> Self {
-        self.viewModel.onDragAction = action
-        return self
+    func onDrag(_ action: @escaping (Bool) -> Void) -> some View {
+        var self_ = self
+        self_.onDragAction = action
+        return self_
     }
 }
 

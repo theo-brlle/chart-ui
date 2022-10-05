@@ -4,23 +4,13 @@ A SwiftUI chart library.
 
 ## Installation
 
-ChartUI is compatible with SPM and Cocoapods.
+ChartUI is compatible with SPM.
 
 ### SPM
 
 Just add this repo as a dependency of your project. Here is the repo URL: https://github.com/theo-brlle/chart-ui.git
 
-### Cocoapods
-
-Add ChartUI as a dependency in your `Podfile`.
-
-```
-pod 'ChartUI', '~> 0.5.0'
-```
-
-Then run `pod install` and open the `.xcworkspace` file in Xcode.
-
-## Sample usage 
+## Sample usage
 
 ### Line chart (with one line)
 
@@ -31,7 +21,7 @@ import ChartUI
 ```
 
 Then, create the data you want to display in the chart and create the `LineChartView`.
-Don't forget to give it a height with `.frame(height:)`. 
+Don't forget to give it a height with `.frame(height:)`.
 
 ```swift
 struct ContentView: View {
@@ -44,11 +34,11 @@ struct ContentView: View {
         LineChartSimplePlotData(key: "Jan 6th, 2022", value: FormattedChartValue(value: CGFloat(600), formatted: "600 €")),
         LineChartSimplePlotData(key: "Jan 7th, 2022", value: FormattedChartValue(value: CGFloat(1100), formatted: "1 100 €"))
     ]
-    
+
     var body: some View {
         LineChartView(type: .oneLine(data: oneLineData, detailsViewLabel: "PRICE"))
             .frame(height: 250)
             .padding()
     }
 }
-``` 
+```
